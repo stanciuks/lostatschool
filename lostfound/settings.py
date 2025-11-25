@@ -151,3 +151,9 @@ CSRF_TRUSTED_ORIGINS = [
     "https://lostatschool.space",
     "https://www.lostatschool.space",
 ]
+
+# Custom error pages
+HANDLER404 = "core.views.custom_404"
+HANDLER500 = "core.views.custom_500"
+DEBUG = False
+ALLOWED_HOSTS = ['lostatschool.space', 'www.lostatschool.space', '195.181.241.184']

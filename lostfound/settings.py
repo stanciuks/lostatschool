@@ -25,7 +25,12 @@ SECRET_KEY = 'django-insecure-%5f7o(-nv3*c53#9z#6hydo*qv$q5jm%4x31551ckjgg^8gi!#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'lostatschool.space',
+    'www.lostatschool.space',
+    '195.181.241.184',
+]
+
 
 
 # Application definition

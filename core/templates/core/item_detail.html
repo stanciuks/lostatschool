@@ -1,0 +1,29 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="card">
+    {% if item.image %}
+    <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}">
+    {% endif %}
+
+    <div class="card-body">
+        <h2 class="card-title">
+            {{ item.title }}
+            {% if item.status == 'CLAIMED' %}
+                <span class="badge bg-success">Claimed</span>
+            {% endif %}
+        </h2>
+
+        <p><strong>Description:</strong> {{ item.description }}</p>
+        <p><strong>Category:</strong> {{ item.category }}</p>
+        <p><strong>Location found:</strong> {{ item.location_found }}</p>
+        <p><strong>Date found:</strong> {{ item.date_found }}</p>
+
+        {% if request.user.is_staff and item.status != 'CLAIMED' %}
+            <a href="{% url 'item_claim' item.pk %}" class="btn btn-success">Mark as claimed</a>
+        {% endif %}
+
+        <a href="{% url 'item_list' %}" class="btn btn-secondary">Back to list</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h1 class="mb-4">Add a new lost item</h1>
+
+<form method="POST" enctype="multipart/form-data" class="card p-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button class="btn btn-primary mt-3" type="submit">Submit</button>
+</form>
+{% endblock %}

@@ -3,46 +3,84 @@
 {% block content %}
 <h1 class="mb-4">All Lost Items</h1>
 
+<!-- SEARCH + CATEGORY FILTER -->
 <form method="GET" class="row g-3 mb-4">
+
+    <!-- SEARCH FIELD -->
     <div class="col-md-4">
-        <input type="text" name="q" class="form-control" placeholder="Search..." value="{{ query }}">
+        <input type="text" 
+               name="q" 
+               class="form-control" 
+               placeholder="Search..." 
+               value="{{ query }}">
     </div>
+
+    <!-- CATEGORY DROPDOWN -->
     <div class="col-md-4">
         <select name="category" class="form-select">
             <option value="">All categories</option>
             {% for c in categories %}
-                <option value="{{ c.id }}" {% if selected_category == c.id|stringformat:"s" %}selected{% endif %}>
+                <option value="{{ c.id }}"
+                    {% if c.id|stringformat:"s" == selected_category %}
+                        selected
+                    {% endif %}
+                >
                     {{ c.name }}
                 </option>
             {% endfor %}
         </select>
     </div>
+
+    <!-- SUBMIT BUTTON -->
     <div class="col-md-4">
         <button class="btn btn-primary w-100" type="submit">Filter</button>
     </div>
 </form>
 
+
+
+<!-- ITEM GRID -->
 <div class="row">
     {% for item in items %}
     <div class="col-md-4 mb-3">
-        <div class="card h-100">
+        <div class="card h-100 shadow-sm">
+
+            <!-- IMAGE -->
             {% if item.image %}
-            <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}">
+                <img src="{{ item.image.url }}" 
+                     class="card-img-top" 
+                     alt="{{ item.title }}" 
+                     style="object-fit: cover; height: 200px;">
             {% endif %}
+
+            <!-- ITEM DETAILS -->
             <div class="card-body">
                 <h5 class="card-title">
                     {{ item.title }}
-                    {% if item.status == 'CLAIMED' %}
-                        <span class="badge bg-success">Claimed</span>
-                    {% endif %}
                 </h5>
-                <p class="card-text">{{ item.description|truncatechars:80 }}</p>
-                <a href="{% url 'item_detail' item.pk %}" class="btn btn-primary">View</a>
+
+                <!-- CATEGORY BADGE -->
+                {% if item.category %}
+                    <span class="badge bg-secondary">
+                        {{ item.category.name }}
+                    </span>
+                {% endif %}
+
+                <p class="card-text mt-2">
+                    {{ item.description|truncatechars:80 }}
+                </p>
+
+                <a href="{% url 'item_detail' item.pk %}" class="btn btn-primary">
+                    View
+                </a>
             </div>
+
         </div>
     </div>
+
     {% empty %}
     <p>No items found.</p>
     {% endfor %}
 </div>
+
 {% endblock %}

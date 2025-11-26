@@ -1,12 +1,119 @@
-{% extends 'core/base.html' %}
+{% extends "core/base.html" %}
 
 {% block content %}
-<h1 class="mb-4">Add a new lost item</h1>
+<h2>Add Lost Item</h2>
 
-<form method="POST" enctype="multipart/form-data" class="card p-4">
+<form method="post" enctype="multipart/form-data" id="upload-form">
     {% csrf_token %}
-    {{ form.as_p }}
 
-    <button class="btn btn-primary mt-3" type="submit">Submit</button>
+    <!-- Show form errors -->
+    {% if form.errors %}
+        <div style="color: red; margin-bottom: 10px;">
+            {{ form.errors }}
+        </div>
+    {% endif %}
+
+    <!-- Title -->
+    <label>Title</label>
+    {{ form.title }}
+
+    <!-- Description -->
+    <label>Description</label>
+    {{ form.description }}
+
+    <!-- Category -->
+    <label>Category</label>
+    {{ form.category }}
+
+    <!-- Location found -->
+    <label>Location found</label>
+    {{ form.location_found }}
+
+    <!-- Date found -->
+    <label>Date found</label>
+    {{ form.date_found }}
+
+    <!-- DRAG & DROP UPLOAD AREA -->
+    <label>Image</label>
+
+    <div id="drop-area">
+        <p>Drag & drop an image here, or click to select</p>
+        <img id="preview" style="max-width: 300px; display: none; margin-top: 10px;">
+    </div>
+
+    <!-- Hidden file input -->
+    {{ form.image }}
+
+    <button type="submit" id="submit-btn">Submit</button>
 </form>
+
+<style>
+#drop-area {
+    width: 100%;
+    padding: 20px;
+    border: 2px dashed #888;
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#drop-area.dragover {
+    background-color: #f0f8ff;
+    border-color: #007bff;
+}
+</style>
+
+<script>
+// Elements
+const dropArea = document.getElementById("drop-area");
+const fileInput = document.getElementById("id_image");
+const preview = document.getElementById("preview");
+
+// Hide original file input
+fileInput.style.display = "none";
+
+// Trigger file input when clicking drag area
+dropArea.addEventListener("click", () => fileInput.click());
+
+// Handle file selection from input
+fileInput.addEventListener("change", () => {
+    if (fileInput.files.length > 0) {
+        showPreview(fileInput.files[0]);
+    }
+});
+
+// Drag over
+dropArea.addEventListener("dragover", (event) => {
+    event.preventDefault();
+    dropArea.classList.add("dragover");
+});
+
+// Drag leave
+dropArea.addEventListener("dragleave", () => {
+    dropArea.classList.remove("dragover");
+});
+
+// Drop file
+dropArea.addEventListener("drop", (event) => {
+    event.preventDefault();
+    dropArea.classList.remove("dragover");
+
+    const file = event.dataTransfer.files[0];
+    fileInput.files = event.dataTransfer.files; // Attach file to input
+
+    showPreview(file);
+});
+
+// Show preview
+function showPreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        preview.src = e.target.result;
+        preview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+}
+</script>
+
 {% endblock %}

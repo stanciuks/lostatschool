@@ -1,80 +1,57 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.generic import ListView, DetailView, CreateView
+from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
-from django.urls import reverse
-from django.db.models import Q
+from django.utils.decorators import method_decorator
 
-from .models import LostItem, ItemCategory
-from .forms import LostItemForm
+from .models import LostItem, Category
 
-
-# ========================================
-# HOME PAGE (LIST + SEARCH + CATEGORY)
-# ========================================
 
 def home(request):
-    query = request.GET.get("q", "")
-    selected_category = request.GET.get("category", "")
-
-    items = LostItem.objects.all()
-    categories = ItemCategory.objects.all()
-
-    # Text search
-    if query:
-        items = items.filter(
-            Q(title__icontains=query) |
-            Q(description__icontains=query) |
-            Q(location_found__icontains=query)
-        )
-
-    # Category filter
-    if selected_category:
-        items = items.filter(category_id=selected_category)
-
-    context = {
-        "items": items,
-        "categories": categories,
-        "query": query,
-        "selected_category": selected_category,
-    }
-    return render(request, "core/item_list.html", context)
+    return redirect("item_list")
 
 
-# ========================================
-# ITEM DETAIL PAGE
-# ========================================
+class ItemListView(ListView):
+    model = LostItem
+    template_name = "core/item_list.html"
+    context_object_name = "items"
 
-def item_detail(request, pk):
-    item = get_object_or_404(LostItem, pk=pk)
-    return render(request, "core/item_detail.html", {"item": item})
+    def get_queryset(self):
+        qs = LostItem.objects.all()
 
+        q = self.request.GET.get("q", "")
+        if q:
+            qs = qs.filter(title__icontains=q)
 
-# ========================================
-# CREATE NEW LOST ITEM
-# ========================================
+        category = self.request.GET.get("category", "")
+        if category:
+            qs = qs.filter(category_id=category)
 
-@login_required
-def item_create(request):
-    if request.method == "POST":
-        form = LostItemForm(request.POST, request.FILES)
+        return qs.order_by("-created_at")
 
-        if form.is_valid():
-            item = form.save(commit=False)
-            item.found_by = request.user
-            item.save()
-            return redirect("item_detail", pk=item.pk)
-        else:
-            print("FORM ERRORS:", form.errors)  # useful debug output
-
-    else:
-        form = LostItemForm()
-
-    return render(request, "core/item_form.html", {"form": form})
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["categories"] = Category.objects.all()
+        ctx["selected_category"] = self.request.GET.get("category", "")
+        ctx["query"] = self.request.GET.get("q", "")
+        return ctx
 
 
-# ========================================
-# CUSTOM ERROR PAGES
-# ========================================
+@method_decorator(login_required, name="dispatch")
+class ItemCreateView(CreateView):
+    model = LostItem
+    fields = ["title", "description", "category", "image"]
+    template_name = "core/item_form.html"
+    success_url = reverse_lazy("item_list")
 
+
+class ItemDetailView(DetailView):
+    model = LostItem
+    template_name = "core/item_detail.html"
+    context_object_name = "item"
+
+
+# Custom error pages
 def custom_404(request, exception):
     return render(request, "core/404.html", status=404)
 

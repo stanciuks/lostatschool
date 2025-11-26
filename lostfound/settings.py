@@ -26,10 +26,12 @@ SECRET_KEY = 'django-insecure-%5f7o(-nv3*c53#9z#6hydo*qv$q5jm%4x31551ckjgg^8gi!#
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    '195.181.241.184',
     'lostatschool.space',
     'www.lostatschool.space',
-    '195.181.241.184',
+    '*'
 ]
+
 
 
 
@@ -155,5 +157,3 @@ CSRF_TRUSTED_ORIGINS = [
 # Custom error pages
 HANDLER404 = "core.views.custom_404"
 HANDLER500 = "core.views.custom_500"
-DEBUG = False
-ALLOWED_HOSTS = ['lostatschool.space', 'www.lostatschool.space', '195.181.241.184']

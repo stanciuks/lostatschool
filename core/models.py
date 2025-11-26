@@ -30,22 +30,14 @@ class Category(models.Model):
 #  Lost Item Model
 # -----------------------------
 class LostItem(models.Model):
-    STATUS_CHOICES = [
-        ("FOUND", "Found"),
-        ("CLAIMED", "Claimed"),
-    ]
-
     title = models.CharField(max_length=200)
     description = models.TextField()
-    image = models.ImageField(upload_to=safe_image_path, blank=True, null=True)
-
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="FOUND")
-
-    date_found = models.DateTimeField(default=timezone.now)
-
-    def is_recent(self):
-        return (timezone.now() - self.date_found).days < 3
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to="items/", null=True, blank=True)
+    date_found = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, default="FOUND")
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
+

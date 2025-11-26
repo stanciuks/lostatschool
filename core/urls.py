@@ -3,13 +3,7 @@ from . import views
 
 urlpatterns = [
     path('', views.home, name='home'),
-
-    # item list (now a class-based view)
-    path('items/', views.ItemListView.as_view(), name='item_list'),
-
-    # item detail
-    path('item/<int:pk>/', views.ItemDetailView.as_view(), name='item_detail'),
-
-    # create new item
-    path('item/create/', views.ItemCreateView.as_view(), name='item_create'),
+    path('items/', views.item_list, name='item_list'),
+    path('item/<int:pk>/', views.item_detail, name='item_detail'),
+    path('item/create/', views.item_create, name='item_create'),
 ]

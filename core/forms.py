@@ -1,6 +1,7 @@
 from django import forms
 from .models import LostItem
 
+
 class LostItemForm(forms.ModelForm):
     class Meta:
         model = LostItem
@@ -8,11 +9,10 @@ class LostItemForm(forms.ModelForm):
             "title",
             "description",
             "category",
-            "image",
             "location_found",
             "date_found",
+            "image",
         ]
         widgets = {
             "date_found": forms.DateInput(attrs={"type": "date"}),
         }
-

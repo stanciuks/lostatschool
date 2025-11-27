@@ -1,0 +1,27 @@
+<div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-1">
+        <h5 class="card-title mb-0">{{ item.title }}</h5>
+        {% if item.is_claimed %}
+        <span class="badge text-bg-success">Claimed</span>
+        {% else %}
+        <span class="badge text-bg-warning">Found</span>
+        {% endif %}
+    </div>
+
+    <p class="small text-muted mb-1">
+        {% if item.category.name == "Clothing" %}👕
+        {% elif item.category.name == "Electronics" %}🎧
+        {% elif item.category.name == "Accessories" %}🎒
+        {% elif item.category.name == "School Supplies" %}📚
+        {% else %}📦
+        {% endif %}
+        {{ item.category.name }}
+    </p>
+
+    <p class="card-text small text-muted">
+        Found at: {{ item.location_found }}<br>
+        Date: {{ item.date_found }}
+    </p>
+    <p class="card-text">{{ item.description|truncatechars:80 }}</p>
+    {% if item.pk %}
+<a

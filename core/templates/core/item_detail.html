@@ -1,4 +1,6 @@
 {% extends 'core/base.html' %}
+{% load static %}
+
 {% block content %}
 
 <a href="{% url 'item_list' %}" class="btn btn-link">&larr; Back to items</a>
@@ -23,7 +25,6 @@
 
         <p class="text-muted mt-2">
 
-            <!-- CATEGORY ICON -->
             {% if item.category.name == "Clothing" %}
                 👕 Clothing
             {% elif item.category.name == "Electronics" %}
@@ -37,15 +38,12 @@
             {% endif %}
             <br>
 
-            <!-- LOCATION + DATE -->
             Found at: {{ item.location_found }}<br>
             Date found: {{ item.date_found }}
         </p>
 
-        <!-- DESCRIPTION -->
         <p>{{ item.description }}</p>
 
-        <!-- CLAIM BUTTON -->
         {% if not item.is_claimed %}
         <form method="POST" 
               action="{% url 'item_claim' item.pk %}" 
@@ -59,7 +57,6 @@
         </p>
         {% endif %}
 
-        <!-- EDIT / DELETE FOR ADMIN -->
         {% if user.is_staff %}
         <hr>
         <div class="d-flex gap-2 mt-3">
@@ -72,8 +69,9 @@
         </div>
         {% endif %}
 
-        <!-- REPORT BUTTON -->
         <hr>
+
+        <!-- IMPORTANT: this URL must match urls.py -->
         <a href="{% url 'report_item' item.pk %}" 
            class="btn btn-outline-warning w-100 mt-2">
             Report incorrect / inappropriate

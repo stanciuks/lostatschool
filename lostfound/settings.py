@@ -157,3 +157,6 @@ CSRF_TRUSTED_ORIGINS = [
 # Custom error pages
 HANDLER404 = "core.views.custom_404"
 HANDLER500 = "core.views.custom_500"
+
+DEFAULT_FROM_EMAIL = "augustas.stancikas@gmail.com"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

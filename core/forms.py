@@ -1,5 +1,7 @@
 from django import forms
 from .models import LostItem
+from .models import ItemReport
+
 
 
 class LostItemForm(forms.ModelForm):
@@ -16,3 +18,8 @@ class LostItemForm(forms.ModelForm):
         widgets = {
             "date_found": forms.DateInput(attrs={"type": "date"}),
         }
+
+class ItemReportForm(forms.ModelForm):
+    class Meta:
+        model = ItemReport
+        fields = ["reason"]

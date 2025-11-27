@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 import os
 from uuid import uuid4
+from django.conf import settings
 
 
 def safe_image_path(instance, filename):
@@ -37,7 +38,9 @@ class LostItem(models.Model):
     date_found = models.DateField(default=timezone.now)
 
     status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default="FOUND"
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="FOUND"
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -51,3 +54,42 @@ class LostItem(models.Model):
     @property
     def is_claimed(self):
         return self.status == "CLAIMED"
+
+
+# ✅ FIXED: ItemReport must NOT be inside LostItem
+class ItemReport(models.Model):
+    STATUS_NEW = "new"
+    STATUS_REVIEWED = "reviewed"
+    STATUS_DISMISSED = "dismissed"
+
+    STATUS_CHOICES = [
+        (STATUS_NEW, "New"),
+        (STATUS_REVIEWED, "Reviewed"),
+        (STATUS_DISMISSED, "Dismissed"),
+    ]
+
+    item = models.ForeignKey(
+        LostItem,
+        on_delete=models.CASCADE,
+        related_name="reports",
+    )
+    reason = models.TextField()
+    reported_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="item_reports",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_NEW,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Report for {self.item.title} ({self.created_at:%Y-%m-%d})"

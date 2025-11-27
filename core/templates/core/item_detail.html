@@ -4,41 +4,80 @@
 <a href="{% url 'item_list' %}" class="btn btn-link">&larr; Back to items</a>
 
 <div class="row mt-3">
-
     <div class="col-md-6">
         {% if item.image %}
-        <div class="position-relative">
-            <img src="{{ item.image.url }}" class="img-fluid rounded shadow">
-            {% if item.status == "CLAIMED" %}
-            <span class="badge bg-success position-absolute top-0 end-0 m-3 shadow">
-                Claimed
-            </span>
-            {% endif %}
-        </div>
+        <img src="{{ item.image.url }}" class="img-fluid rounded shadow">
         {% endif %}
     </div>
 
     <div class="col-md-6">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>{{ item.title }}</h2>
 
-        <h2 class="fw-bold">{{ item.title }}</h2>
-
-        <div class="text-muted mb-3">
-            <strong>Category:</strong> {{ item.category.name }}<br>
-            <strong>Found at:</strong> {{ item.location_found }}<br>
-            <strong>Date:</strong> {{ item.date_found }}
+            {% if item.is_claimed %}
+            <span class="badge text-bg-success">Claimed</span>
+            {% else %}
+            <span class="badge text-bg-warning">Found</span>
+            {% endif %}
         </div>
 
-        <p class="mb-4">{{ item.description }}</p>
+        <p class="text-muted mt-2">
 
-        <!-- Claim button -->
-        {% if item.status != "CLAIMED" %}
-        <form method="POST" action="{% url 'item_claim' item.pk %}">
+            <!-- CATEGORY ICON -->
+            {% if item.category.name == "Clothing" %}
+                👕 Clothing
+            {% elif item.category.name == "Electronics" %}
+                🎧 Electronics
+            {% elif item.category.name == "Accessories" %}
+                🎒 Accessories
+            {% elif item.category.name == "School Supplies" %}
+                📚 School Supplies
+            {% else %}
+                📦 {{ item.category.name }}
+            {% endif %}
+            <br>
+
+            <!-- LOCATION + DATE -->
+            Found at: {{ item.location_found }}<br>
+            Date found: {{ item.date_found }}
+        </p>
+
+        <!-- DESCRIPTION -->
+        <p>{{ item.description }}</p>
+
+        <!-- CLAIM BUTTON -->
+        {% if not item.is_claimed %}
+        <form method="POST" 
+              action="{% url 'item_claim' item.pk %}" 
+              onsubmit="return confirm('Are you sure this item has been claimed?');">
             {% csrf_token %}
-            <button class="btn btn-success btn-lg w-100">Mark as claimed</button>
+            <button class="btn btn-success w-100">Mark as claimed</button>
         </form>
         {% else %}
-        <p class="alert alert-success text-center">This item has been claimed.</p>
+        <p class="alert alert-success mt-3 text-center">
+            This item has been claimed.
+        </p>
         {% endif %}
+
+        <!-- EDIT / DELETE FOR ADMIN -->
+        {% if user.is_staff %}
+        <hr>
+        <div class="d-flex gap-2 mt-3">
+            <a href="{% url 'item_edit' item.pk %}" class="btn btn-outline-secondary w-50">
+                Edit
+            </a>
+            <a href="{% url 'item_delete' item.pk %}" class="btn btn-outline-danger w-50">
+                Delete
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- REPORT BUTTON -->
+        <hr>
+        <a href="{% url 'report_item' item.pk %}" 
+           class="btn btn-outline-warning w-100 mt-2">
+            Report incorrect / inappropriate
+        </a>
 
     </div>
 </div>

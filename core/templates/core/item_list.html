@@ -1,29 +1,67 @@
-<div class="card-body">
-    <div class="d-flex justify-content-between align-items-center mb-1">
-        <h5 class="card-title mb-0">{{ item.title }}</h5>
-        {% if item.is_claimed %}
-        <span class="badge text-bg-success">Claimed</span>
-        {% else %}
-        <span class="badge text-bg-warning">Found</span>
-        {% endif %}
+{% extends 'core/base.html' %}
+{% block content %}
+
+<h1 class="mb-4">All Found Items</h1>
+
+<!-- Search + Category Filter -->
+<form method="GET" class="row g-3 mb-4">
+
+    <div class="col-md-6">
+        <input type="text"
+               name="q"
+               value="{{ query }}"
+               placeholder="Search items..."
+               class="form-control">
     </div>
 
-    <p class="small text-muted mb-1">
-        {% if item.category.name == "Clothing" %}👕
-        {% elif item.category.name == "Electronics" %}🎧
-        {% elif item.category.name == "Accessories" %}🎒
-        {% elif item.category.name == "School Supplies" %}📚
-        {% else %}📦
-        {% endif %}
-        {{ item.category.name }}
-    </p>
+    <div class="col-md-4">
+        <select name="category" class="form-select">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>
+                {{ cat.name }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
 
-    <p class="card-text small text-muted">
-        Found at: {{ item.location_found }}<br>
-        Date: {{ item.date_found }}
-    </p>
-    <p class="card-text">{{ item.description|truncatechars:80 }}</p>
-    <a href="{% url 'item_detail' item.pk %}" class="btn btn-outline-primary w-100">
-        View Details
-    </a>
+    <div class="col-md-2">
+        <button class="btn btn-primary w-100">Filter</button>
+    </div>
+
+</form>
+
+<!-- Items Grid -->
+<div class="row">
+    {% for item in items %}
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 shadow-sm">
+
+            {% if item.image %}
+            <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}">
+            {% endif %}
+
+            <div class="card-body">
+                <h5 class="card-title">{{ item.title }}</h5>
+                <p class="card-text small text-muted">
+                    Found at: {{ item.location_found }}<br>
+                    Date: {{ item.date_found }}
+                </p>
+                <p class="card-text">{{ item.description|truncatechars:80 }}</p>
+
+                <!-- SAFE LINK (fixes NoReverseMatch) -->
+                {% if item.pk %}
+                <a href="{% url 'item_detail' item.pk %}" class="btn btn-outline-primary w-100">
+                    View Details
+                </a>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+    {% empty %}
+    <p>No items found.</p>
+    {% endfor %}
 </div>
+
+{% endblock %}

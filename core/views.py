@@ -18,7 +18,7 @@ def item_list(request):
     selected_category = request.GET.get("category", "")
 
     categories = Category.objects.all()
-    items = LostItem.objects.all()
+    items = LostItem.objects.filter(id__isnull=False)
 
     if query:
         items = items.filter(

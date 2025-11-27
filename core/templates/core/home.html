@@ -1,23 +1,44 @@
 {% extends 'core/base.html' %}
+
 {% block content %}
-<h1 class="mb-3">Recent found items</h1>
-<div class="row">
-    {% for item in recent_items %}
-    <div class="col-md-4 mb-3">
-        <div class="card h-100">
-            {% if item.image %}
-            <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}">
-            {% endif %}
-            <div class="card-body">
-                <h5 class="card-title">{{ item.title }}</h5>
-                <p class="card-text">{{ item.description|truncatechars:80 }}</p>
-                <a href="{% url 'item_detail' item.pk %}" class="btn btn-primary">Details</a>
+<div class="container">
+    <h1 class="mb-4 fw-bold">Recent Found Items</h1>
+
+    <div class="row">
+        {% for item in recent_items %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm border-0 rounded-3">
+
+                {% if item.image %}
+                <img src="{{ item.image.url }}" 
+                     class="card-img-top" 
+                     style="height: 220px; object-fit: cover;" 
+                     alt="{{ item.title }}">
+                {% else %}
+                <div class="d-flex justify-content-center align-items-center bg-light"
+                     style="height: 220px;">
+                    <span class="text-muted">No image</span>
+                </div>
+                {% endif %}
+
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">{{ item.title }}</h5>
+                    <p class="card-text text-muted">
+                        {{ item.description|truncatechars:80 }}
+                    </p>
+
+                    <a href="{% url 'item_detail' item.pk %}" 
+                       class="btn btn-primary w-100">
+                        View details
+                    </a>
+                </div>
+
             </div>
         </div>
+        {% empty %}
+        <p class="text-muted">No items yet.</p>
+        {% endfor %}
     </div>
-    {% empty %}
-    <p>No items yet.</p>
-    {% endfor %}
 </div>
-<a href="{% url 'item_list' %}" class="btn btn-link">View all items</a>
 {% endblock %}
+

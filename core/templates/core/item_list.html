@@ -1,77 +1,71 @@
 {% extends 'core/base.html' %}
-
 {% block content %}
-<h1 class="mb-4">All Lost Items</h1>
 
-<!-- SEARCH + CATEGORY FILTER -->
-<form method="GET" class="row g-3 mb-4">
+<h1 class="mb-4 fw-bold">All Found Items</h1>
 
-    <!-- SEARCH FIELD -->
-    <div class="col-md-4">
-        <input type="text" 
-               name="q" 
-               class="form-control" 
-               placeholder="Search..." 
-               value="{{ query }}">
+<!-- Search + Category Filter -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+
+            <div class="col-md-6">
+                <input type="text"
+                    name="q"
+                    value="{{ query }}"
+                    placeholder="Search by name or description..."
+                    class="form-control form-control-lg">
+            </div>
+
+            <div class="col-md-4">
+                <select name="category" class="form-select form-select-lg">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <button class="btn btn-primary btn-lg w-100">Filter</button>
+            </div>
+
+        </form>
     </div>
+</div>
 
-    <!-- CATEGORY DROPDOWN -->
-    <div class="col-md-4">
-        <select name="category" class="form-select">
-            <option value="">All categories</option>
-            {% for c in categories %}
-                <option value="{{ c.id }}"
-                    {% if c.id|stringformat:"s" == selected_category %}
-                        selected
-                    {% endif %}
-                >
-                    {{ c.name }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <!-- SUBMIT BUTTON -->
-    <div class="col-md-4">
-        <button class="btn btn-primary w-100" type="submit">Filter</button>
-    </div>
-</form>
-
-
-
-<!-- ITEM GRID -->
+<!-- Items Grid -->
 <div class="row">
     {% for item in items %}
-    <div class="col-md-4 mb-3">
-        <div class="card h-100 shadow-sm">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm border-0">
 
-            <!-- IMAGE -->
-            {% if item.image %}
-                <img src="{{ item.image.url }}" 
-                     class="card-img-top" 
-                     alt="{{ item.title }}" 
-                     style="object-fit: cover; height: 200px;">
-            {% endif %}
+            <div class="position-relative">
 
-            <!-- ITEM DETAILS -->
-            <div class="card-body">
-                <h5 class="card-title">
-                    {{ item.title }}
-                </h5>
-
-                <!-- CATEGORY BADGE -->
-                {% if item.category %}
-                    <span class="badge bg-secondary">
-                        {{ item.category.name }}
-                    </span>
+                {% if item.image %}
+                <img src="{{ item.image.url }}" class="card-img-top item-img" alt="{{ item.title }}">
                 {% endif %}
 
-                <p class="card-text mt-2">
-                    {{ item.description|truncatechars:80 }}
+                {% if item.status == "CLAIMED" %}
+                <span class="badge bg-success position-absolute top-0 end-0 m-2 shadow">
+                    Claimed
+                </span>
+                {% endif %}
+            </div>
+
+            <div class="card-body">
+                <h5 class="card-title fw-bold">{{ item.title }}</h5>
+
+                <p class="small text-muted mb-1">
+                    <strong>Found at:</strong> {{ item.location_found }}<br>
+                    <strong>Date:</strong> {{ item.date_found }}
                 </p>
 
-                <a href="{% url 'item_detail' item.pk %}" class="btn btn-primary">
-                    View
+                <p class="card-text">{{ item.description|truncatechars:80 }}</p>
+
+                <a href="{% url 'item_detail' item.pk %}" class="btn btn-outline-primary w-100">
+                    View Details
                 </a>
             </div>
 
@@ -79,8 +73,16 @@
     </div>
 
     {% empty %}
-    <p>No items found.</p>
+    <p class="text-center mt-4">No items found.</p>
     {% endfor %}
 </div>
+
+<style>
+    .item-img {
+        height: 220px;
+        object-fit: cover;
+        border-radius: 6px 6px 0 0;
+    }
+</style>
 
 {% endblock %}

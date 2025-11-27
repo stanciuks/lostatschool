@@ -11,8 +11,8 @@ from .forms import LostItemForm
 # HOME PAGE
 # -----------------------
 def home(request):
-    latest_items = LostItem.objects.order_by("-created_at")[:6]
-    return render(request, "core/home.html", {"latest_items": latest_items})
+    recent_items = LostItem.objects.order_by('-created_at')[:6]
+    return render(request, "core/home.html", {"recent_items": recent_items})
 
 
 # -----------------------
@@ -23,7 +23,7 @@ def item_list(request):
     selected_category = request.GET.get("category", "")
 
     categories = Category.objects.all()
-    items = LostItem.objects.all()
+    items = LostItem.objects.order_by("-created_at")
 
     if query:
         items = items.filter(

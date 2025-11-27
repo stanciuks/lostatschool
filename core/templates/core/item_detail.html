@@ -1,29 +1,46 @@
 {% extends 'core/base.html' %}
-
 {% block content %}
-<div class="card">
-    {% if item.image %}
-    <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}">
-    {% endif %}
 
-    <div class="card-body">
-        <h2 class="card-title">
-            {{ item.title }}
-            {% if item.status == 'CLAIMED' %}
-                <span class="badge bg-success">Claimed</span>
+<a href="{% url 'item_list' %}" class="btn btn-link">&larr; Back to items</a>
+
+<div class="row mt-3">
+
+    <div class="col-md-6">
+        {% if item.image %}
+        <div class="position-relative">
+            <img src="{{ item.image.url }}" class="img-fluid rounded shadow">
+            {% if item.status == "CLAIMED" %}
+            <span class="badge bg-success position-absolute top-0 end-0 m-3 shadow">
+                Claimed
+            </span>
             {% endif %}
-        </h2>
+        </div>
+        {% endif %}
+    </div>
 
-        <p><strong>Description:</strong> {{ item.description }}</p>
-        <p><strong>Category:</strong> {{ item.category }}</p>
-        <p><strong>Location found:</strong> {{ item.location_found }}</p>
-        <p><strong>Date found:</strong> {{ item.date_found }}</p>
+    <div class="col-md-6">
 
-        {% if request.user.is_staff and item.status != 'CLAIMED' %}
-            <a href="{% url 'item_claim' item.pk %}" class="btn btn-success">Mark as claimed</a>
+        <h2 class="fw-bold">{{ item.title }}</h2>
+
+        <div class="text-muted mb-3">
+            <strong>Category:</strong> {{ item.category.name }}<br>
+            <strong>Found at:</strong> {{ item.location_found }}<br>
+            <strong>Date:</strong> {{ item.date_found }}
+        </div>
+
+        <p class="mb-4">{{ item.description }}</p>
+
+        <!-- Claim button -->
+        {% if item.status != "CLAIMED" %}
+        <form method="POST" action="{% url 'item_claim' item.pk %}">
+            {% csrf_token %}
+            <button class="btn btn-success btn-lg w-100">Mark as claimed</button>
+        </form>
+        {% else %}
+        <p class="alert alert-success text-center">This item has been claimed.</p>
         {% endif %}
 
-        <a href="{% url 'item_list' %}" class="btn btn-secondary">Back to list</a>
     </div>
 </div>
+
 {% endblock %}

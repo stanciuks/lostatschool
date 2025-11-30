@@ -27,6 +27,7 @@
         .card {
             transition: transform .15s ease, box-shadow .15s ease;
         }
+
         .card:hover {
             transform: translateY(-3px);
             box-shadow: 0 4px 20px rgba(0,0,0,.08);
@@ -49,6 +50,7 @@
 
         <div class="collapse navbar-collapse" id="navbarNav">
 
+            <!-- LEFT NAV -->
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
                 <li class="nav-item">
@@ -72,30 +74,66 @@
                     </a>
                 </li>
 
-            </ul>
-
-            <ul class="navbar-nav">
                 {% if user.is_authenticated %}
-                <li class="nav-item me-3">
-                    <span class="navbar-text text-white">
-                        Hello, {{ user.username }}!
-                    </span>
-                </li>
                 <li class="nav-item">
-                    <a class="btn btn-outline-light btn-sm" href="/admin/logout/">Logout</a>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                    <a class="btn btn-light btn-sm" href="/admin/login/">Login</a>
+                    <a class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}"
+                       href="{% url 'dashboard' %}">
+                        Dashboard
+                    </a>
                 </li>
                 {% endif %}
+
+                {% if user.is_staff %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/reports/' %}active{% endif %}"
+                       href="{% url 'report_center' %}">
+                        Report Center
+                    </a>
+                </li>
+                {% endif %}
+
             </ul>
 
+            <!-- RIGHT SIDE: USER AUTH -->
+            <ul class="navbar-nav">
+
+                {% if user.is_authenticated %}
+
+                <!-- Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                        {{ user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'dashboard' %}">Dashboard</a></li>
+                        {% if user.is_staff %}
+                        <li><a class="dropdown-item" href="{% url 'report_center' %}">Report Center</a></li>
+                        {% endif %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="/admin/logout/">
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                {% else %}
+
+                <li class="nav-item">
+                    <a class="btn btn-light btn-sm" href="/accounts/login/">
+                        Login
+                    </a>
+                </li>
+
+                {% endif %}
+
+            </ul>
         </div>
     </div>
 </nav>
 
-<!-- MAIN CONTENT -->
+<!-- MAIN CONTENT AREA -->
 <div class="container py-4">
     {% block content %}{% endblock %}
 </div>

@@ -2,9 +2,10 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.views.decorators.http import require_POST
+from django.core.paginator import Paginator
+from .models import LostItem, Category, ItemReport
+from .forms import LostItemForm, ItemReportForm
 
-from .models import LostItem, Category
-from .forms import LostItemForm
 
 
 # -----------------------
@@ -19,31 +20,59 @@ def home(request):
 # ITEM LIST
 # -----------------------
 def item_list(request):
-    query = request.GET.get("q", "")
-    selected_category = request.GET.get("category", "")
+    items = (
+        LostItem.objects.all()
+        .select_related("category")
+        .order_by("-date_found")
+    )
 
-    categories = Category.objects.all()
-    items = LostItem.objects.all()
+    # GET parameters
+    q = request.GET.get("q", "").strip()
+    category_id = request.GET.get("category") or ""
+    status = request.GET.get("status") or ""
+    order = request.GET.get("order") or "newest"
 
-    if query:
+    # Search by keywords
+    if q:
         items = items.filter(
-            Q(title__icontains=query) |
-            Q(description__icontains=query)
+            Q(title__icontains=q)
+            | Q(description__icontains=q)
+            | Q(location_found__icontains=q)
         )
 
-    if selected_category:
-        items = items.filter(category_id=selected_category)
+    # Category filter
+    if category_id:
+        items = items.filter(category_id=category_id)
 
-    return render(
-        request,
-        "core/item_list.html",
-        {
-            "items": items,
-            "categories": categories,
-            "query": query,
-            "selected_category": selected_category,
-        },
-    )
+    # Status filter
+    if status == "unclaimed":
+        items = items.filter(is_claimed=False)
+    elif status == "claimed":
+        items = items.filter(is_claimed=True)
+
+    # Sorting
+    if order == "oldest":
+        items = items.order_by("date_found")
+    else:
+        items = items.order_by("-date_found")
+
+    # Pagination
+    paginator = Paginator(items, 9)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    categories = Category.objects.all().order_by("name")
+
+    context = {
+        "page_obj": page_obj,
+        "categories": categories,
+        "q": q,
+        "current_category": category_id,
+        "current_status": status,
+        "current_order": order,
+    }
+    return render(request, "core/item_list.html", context)
+
 
 
 # -----------------------
@@ -112,19 +141,19 @@ def report_item(request, pk):
     item = get_object_or_404(LostItem, pk=pk)
 
     if request.method == "POST":
-        reason = request.POST.get("reason")
+        form = ItemReportForm(request.POST)
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.item = item
+            report.reported_by = request.user
+            report.save()
+            return redirect("item_detail", pk=pk)
 
-        # Send email to admin
-        send_mail(
-            subject=f"Item Reported: {item.title}",
-            message=f"The following item was reported:\n\nTitle: {item.title}\nID: {item.id}\nReason: {reason}",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[settings.DEFAULT_FROM_EMAIL],
-        )
+    else:
+        form = ItemReportForm()
 
-        return redirect("item_detail", pk=item.pk)
+    return render(request, "core/report_item.html", {"form": form, "item": item})
 
-    return render(request, "core/report_item.html", {"item": item})
 
 
 # -----------------------
@@ -148,3 +177,63 @@ def custom_404(request, exception):
 
 def custom_500(request):
     return render(request, "core/500.html", status=500)
+
+@login_required
+def dashboard(request):
+    my_reports = (
+        ItemReport.objects.filter(reported_by=request.user)
+        .select_related("item")
+        .order_by("-created_at")
+    )
+
+    # Unclaimed = status = "FOUND"
+    recent_unclaimed = (
+        LostItem.objects.filter(status="FOUND")
+        .order_by("-date_found")[:5]
+    )
+
+    # Claimed = status = "CLAIMED"
+    recent_claimed = (
+        LostItem.objects.filter(status="CLAIMED")
+        .order_by("-date_found")[:5]
+    )
+
+    context = {
+        "my_reports": my_reports,
+        "recent_unclaimed": recent_unclaimed,
+        "recent_claimed": recent_claimed,
+    }
+
+    return render(request, "core/dashboard.html", context)
+
+from django.contrib.admin.views.decorators import staff_member_required
+
+@staff_member_required
+def report_center(request):
+    status_filter = request.GET.get("status", "")
+
+    reports = ItemReport.objects.select_related("item", "reported_by")
+
+    if status_filter in ["new", "reviewed", "dismissed"]:
+        reports = reports.filter(status=status_filter)
+
+    reports = reports.order_by("-created_at")
+
+    context = {
+        "reports": reports,
+        "current_status": status_filter,
+    }
+
+    return render(request, "core/report_center.html", context)
+
+@staff_member_required
+def set_report_status(request, pk, new_status):
+    report = get_object_or_404(ItemReport, pk=pk)
+
+    if new_status not in ["new", "reviewed", "dismissed"]:
+        return redirect("report_center")
+
+    report.status = new_status
+    report.save()
+
+    return redirect("report_center")

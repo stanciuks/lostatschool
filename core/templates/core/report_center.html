@@ -1,0 +1,49 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<h1 class="mb-4">Report Center</h1>
+
+<!-- FILTER BUTTONS -->
+<div class="mb-4">
+    <a href="?status=" class="btn btn-outline-primary {% if current_status == "" %}active{% endif %}">All</a>
+    <a href="?status=new" class="btn btn-outline-warning {% if current_status == "new" %}active{% endif %}">New</a>
+    <a href="?status=reviewed" class="btn btn-outline-success {% if current_status == "reviewed" %}active{% endif %}">Reviewed</a>
+    <a href="?status=dismissed" class="btn btn-outline-secondary {% if current_status == "dismissed" %}active{% endif %}">Dismissed</a>
+</div>
+
+<!-- REPORT LIST -->
+<div class="list-group">
+    {% for report in reports %}
+    <div class="list-group-item py-3">
+
+        <div class="d-flex justify-content-between">
+            <div>
+                <strong>{{ report.item.title }}</strong>
+                <span class="badge bg-secondary">{{ report.get_status_display }}</span>
+                <br>
+                <small class="text-muted">
+                    {{ report.created_at }} · by {{ report.reported_by|default:"Anonymous" }}
+                </small>
+                <p class="mt-2 mb-0">{{ report.reason }}</p>
+            </div>
+
+            <div class="text-end">
+                <a href="{% url 'item_detail' report.item.pk %}" class="btn btn-sm btn-outline-primary mb-2">
+                    View item
+                </a>
+
+                <div class="btn-group-vertical">
+                    <a href="{% url 'set_report_status' report.pk 'reviewed' %}" class="btn btn-sm btn-success">Mark reviewed</a>
+                    <a href="{% url 'set_report_status' report.pk 'dismissed' %}" class="btn btn-sm btn-secondary">Dismiss</a>
+                    <a href="{% url 'set_report_status' report.pk 'new' %}" class="btn btn-sm btn-warning">Reset</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    {% empty %}
+    <p class="text-muted">No reports found.</p>
+    {% endfor %}
+</div>
+
+{% endblock %}

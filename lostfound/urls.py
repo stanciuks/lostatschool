@@ -1,7 +1,8 @@
-from django.contrib import admin
-from django.urls import path, include
+"""URL configuration for the lostfound Django project."""
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import include, path
 
 urlpatterns = [
     # Admin panel

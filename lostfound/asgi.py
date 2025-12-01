@@ -1,5 +1,4 @@
-"""
-ASGI config for lostfound project.
+"""ASGI config for lostfound project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 

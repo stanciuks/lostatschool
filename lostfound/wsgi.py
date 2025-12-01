@@ -1,5 +1,4 @@
-"""
-WSGI config for lostfound project.
+"""WSGI config for lostfound project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

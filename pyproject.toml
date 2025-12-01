@@ -1,0 +1,8 @@
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+exclude = ["core/migrations", "static", "venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "D"]
+ignore = ["D203", "D213"]

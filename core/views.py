@@ -1,17 +1,21 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.db.models import Q
-from django.views.decorators.http import require_POST
-from django.core.paginator import Paginator
-from .models import LostItem, Category, ItemReport
-from .forms import LostItemForm, ItemReportForm
+"""Views for the lost-and-found site."""
 
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+
+from .forms import ItemReportForm, LostItemForm
+from .models import Category, ItemReport, LostItem
 
 
 # -----------------------
 # HOME PAGE
 # -----------------------
 def home(request):
+    """Render the home page with the most recent items."""
     recent_items = LostItem.objects.order_by("-created_at")[:6]
     return render(request, "core/home.html", {"recent_items": recent_items})
 
@@ -20,6 +24,7 @@ def home(request):
 # ITEM LIST
 # -----------------------
 def item_list(request):
+    """Render a searchable, filterable, paginated list of lost items."""
     items = (
         LostItem.objects.all()
         .select_related("category")
@@ -37,18 +42,18 @@ def item_list(request):
         items = items.filter(
             Q(title__icontains=q)
             | Q(description__icontains=q)
-            | Q(location_found__icontains=q)
+            | Q(location_found__icontains=q),
         )
 
     # Category filter
     if category_id:
         items = items.filter(category_id=category_id)
 
-    # Status filter
+    # Status filter (use real DB field, not property)
     if status == "unclaimed":
-        items = items.filter(is_claimed=False)
+        items = items.filter(status="FOUND")
     elif status == "claimed":
-        items = items.filter(is_claimed=True)
+        items = items.filter(status="CLAIMED")
 
     # Sorting
     if order == "oldest":
@@ -74,11 +79,11 @@ def item_list(request):
     return render(request, "core/item_list.html", context)
 
 
-
 # -----------------------
 # ITEM DETAIL
 # -----------------------
 def item_detail(request, pk):
+    """Render the detail page for a single lost item."""
     item = get_object_or_404(LostItem, pk=pk)
     return render(request, "core/item_detail.html", {"item": item})
 
@@ -88,6 +93,7 @@ def item_detail(request, pk):
 # -----------------------
 @login_required
 def item_create(request):
+    """Create a new lost item."""
     if request.method == "POST":
         form = LostItemForm(request.POST, request.FILES)
         if form.is_valid():
@@ -104,6 +110,7 @@ def item_create(request):
 # -----------------------
 @login_required
 def item_edit(request, pk):
+    """Edit an existing lost item."""
     item = get_object_or_404(LostItem, pk=pk)
 
     if request.method == "POST":
@@ -117,13 +124,16 @@ def item_edit(request, pk):
     return render(
         request,
         "core/item_edit.html",
-        {"form": form, "item": item}
+        {"form": form, "item": item},
     )
 
 
-
+# -----------------------
+# DELETE ITEM
+# -----------------------
 @login_required
 def item_delete(request, pk):
+    """Delete a lost item after confirmation."""
     item = get_object_or_404(LostItem, pk=pk)
 
     if request.method == "POST":
@@ -133,11 +143,12 @@ def item_delete(request, pk):
     return render(request, "core/item_delete.html", {"item": item})
 
 
-from django.core.mail import send_mail
-from django.conf import settings
-
+# -----------------------
+# REPORT ITEM
+# -----------------------
 @login_required
 def report_item(request, pk):
+    """Create a report for a specific lost item."""
     item = get_object_or_404(LostItem, pk=pk)
 
     if request.method == "POST":
@@ -147,13 +158,13 @@ def report_item(request, pk):
             report.item = item
             report.reported_by = request.user
             report.save()
+            # You could send email here if EMAIL settings are configured.
             return redirect("item_detail", pk=pk)
-
     else:
         form = ItemReportForm()
 
-    return render(request, "core/report_item.html", {"form": form, "item": item})
-
+    context = {"form": form, "item": item}
+    return render(request, "core/report_item.html", context)
 
 
 # -----------------------
@@ -162,6 +173,7 @@ def report_item(request, pk):
 @login_required
 @require_POST
 def mark_claimed(request, pk):
+    """Mark an item as claimed."""
     item = get_object_or_404(LostItem, pk=pk)
     item.status = "CLAIMED"
     item.save()
@@ -172,14 +184,22 @@ def mark_claimed(request, pk):
 # CUSTOM ERROR PAGES
 # -----------------------
 def custom_404(request, exception):
+    """Render the custom 404 error page."""
     return render(request, "core/404.html", status=404)
 
 
 def custom_500(request):
+    """Render the custom 500 error page."""
     return render(request, "core/500.html", status=500)
 
+
+
+# -----------------------
+# USER DASHBOARD
+# -----------------------
 @login_required
 def dashboard(request):
+    """Show the current user's reports and a summary of recent items."""
     my_reports = (
         ItemReport.objects.filter(reported_by=request.user)
         .select_related("item")
@@ -206,10 +226,13 @@ def dashboard(request):
 
     return render(request, "core/dashboard.html", context)
 
-from django.contrib.admin.views.decorators import staff_member_required
 
+# -----------------------
+# REPORT CENTER (STAFF)
+# -----------------------
 @staff_member_required
 def report_center(request):
+    """Admin view to review and filter all item reports."""
     status_filter = request.GET.get("status", "")
 
     reports = ItemReport.objects.select_related("item", "reported_by")
@@ -226,8 +249,10 @@ def report_center(request):
 
     return render(request, "core/report_center.html", context)
 
+
 @staff_member_required
 def set_report_status(request, pk, new_status):
+    """Update the status of a specific report."""
     report = get_object_or_404(ItemReport, pk=pk)
 
     if new_status not in ["new", "reviewed", "dismissed"]:

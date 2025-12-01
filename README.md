@@ -1,1 +1,1 @@
-lostatschool.space
+https://lostatschool.space

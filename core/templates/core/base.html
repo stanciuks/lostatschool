@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Lost At School</title>
+    <title>{% block title %}Lost At School{% endblock %}</title>
 
+    <!-- Bootstrap -->
     <link 
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
-        rel="stylesheet">
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
 
     <style>
-        body {
-            background-color: #f5f7fa;
-        }
+        body { background-color: #f5f7fa; }
 
         .navbar-brand {
             font-weight: 700;
@@ -24,15 +24,31 @@
             text-decoration: underline;
         }
 
+        .google-btn {
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .google-btn img {
+            height: 20px;
+        }
+
         .card {
             transition: transform .15s ease, box-shadow .15s ease;
         }
-
         .card:hover {
             transform: translateY(-3px);
             box-shadow: 0 4px 20px rgba(0,0,0,.08);
         }
     </style>
+
+    {% block extra_head %}{% endblock %}
 </head>
 
 <body>
@@ -50,7 +66,7 @@
 
         <div class="collapse navbar-collapse" id="navbarNav">
 
-            <!-- LEFT NAV -->
+            <!-- LEFT SIDE NAV -->
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
                 <li class="nav-item">
@@ -61,22 +77,43 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link {% if request.path == '/items/' %}active{% endif %}"
+                    <a class="nav-link {% if '/items' in request.path and 'add' not in request.path %}active{% endif %}"
                        href="{% url 'item_list' %}">
                         All Items
                     </a>
                 </li>
 
+                <!-- Add Found Item -->
+                {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link {% if request.path == '/item/create/' %}active{% endif %}"
+                    <a class="nav-link {% if '/items/add' in request.path %}active{% endif %}"
                        href="{% url 'item_create' %}">
-                        Add Item
+                        Add Found Item
+                    </a>
+                </li>
+                {% endif %}
+
+                <!-- Lost Items Requests -->
+                <li class="nav-item">
+                    <a class="nav-link {% if '/lost/' in request.path %}active{% endif %}"
+                       href="{% url 'lost_request_list' %}">
+                        Lost Items
                     </a>
                 </li>
 
+                <!-- Report Lost Item -->
                 {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}"
+                    <a class="nav-link {% if '/lost/request' in request.path %}active{% endif %}"
+                       href="{% url 'lost_request_create' %}">
+                        Report Lost Item
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link {% if '/dashboard' in request.path %}active{% endif %}"
                        href="{% url 'dashboard' %}">
                         Dashboard
                     </a>
@@ -85,60 +122,60 @@
 
                 {% if user.is_staff %}
                 <li class="nav-item">
-                    <a class="nav-link {% if request.path == '/reports/' %}active{% endif %}"
+                    <a class="nav-link {% if '/reports' in request.path %}active{% endif %}"
                        href="{% url 'report_center' %}">
-                        Report Center
+                        Reports
                     </a>
                 </li>
                 {% endif %}
-
             </ul>
 
-            <!-- RIGHT SIDE: USER AUTH -->
+            <!-- RIGHT SIDE AUTH BUTTONS -->
             <ul class="navbar-nav">
 
                 {% if user.is_authenticated %}
 
-                <!-- Dropdown -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
-                        {{ user.username }}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="{% url 'dashboard' %}">Dashboard</a></li>
-                        {% if user.is_staff %}
-                        <li><a class="dropdown-item" href="{% url 'report_center' %}">Report Center</a></li>
-                        {% endif %}
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item text-danger" href="/admin/logout/">
+                    <li class="nav-item me-3">
+                        <span class="navbar-text text-white">
+                            Hello, {{ user.username }}!
+                        </span>
+                    </li>
+
+                    <!-- Logout must be POST (allauth requirement) -->
+                    <li class="nav-item">
+                        <form method="post" action="{% url 'account_logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-light btn-sm">
                                 Logout
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+                            </button>
+                        </form>
+                    </li>
 
                 {% else %}
 
-                <li class="nav-item">
-                    <a class="btn btn-light btn-sm" href="/accounts/login/">
-                        Login
-                    </a>
-                </li>
+                    <!-- Google Login -->
+                    <li class="nav-item">
+                        <a class="google-btn" href="/accounts/google/login/?process=login">
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg">
+                            Login with Google
+                        </a>
+                    </li>
 
                 {% endif %}
-
             </ul>
         </div>
     </div>
 </nav>
 
-<!-- MAIN CONTENT AREA -->
+
+<!-- MAIN CONTENT -->
 <div class="container py-4">
     {% block content %}{% endblock %}
 </div>
 
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+{% block extra_js %}{% endblock %}
 </body>
 </html>

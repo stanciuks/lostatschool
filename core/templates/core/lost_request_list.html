@@ -1,0 +1,39 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Lost Item Reports</h2>
+    <a class="btn btn-primary" href="{% url 'lost_request_create' %}">
+        I lost something
+    </a>
+</div>
+
+{% if lost_requests %}
+    <div class="row g-3">
+        {% for req in lost_requests %}
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ req.title }}</h5>
+                    <p class="card-text">
+                        <strong>Category:</strong> {{ req.category.name }}<br>
+                        <strong>Lost at:</strong> {{ req.location_lost|default:"(not specified)" }}<br>
+                        <strong>Date lost:</strong> {{ req.date_lost }}
+                    </p>
+                    <p class="card-text">
+                        {{ req.description }}
+                    </p>
+                    {% if req.contact_email %}
+                        <p class="small text-muted mb-0">
+                            Contact: {{ req.contact_email }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>No lost item reports yet.</p>
+{% endif %}
+{% endblock %}

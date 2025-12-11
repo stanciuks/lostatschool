@@ -1,0 +1,42 @@
+{% extends "account/base_account.html" %}
+
+{% block account_title %}Sign Up{% endblock %}
+
+{% block account_content %}
+<form method="post" action="{% url 'account_signup' %}">
+    {% csrf_token %}
+
+    <div class="mb-3">
+        <label>Email</label>
+        {{ form.email }}
+    </div>
+
+    <div class="mb-3">
+        <label>Username</label>
+        {{ form.username }}
+    </div>
+
+    <div class="mb-3">
+        <label>Password</label>
+        {{ form.password1 }}
+    </div>
+
+    <div class="mb-3">
+        <label>Confirm Password</label>
+        {{ form.password2 }}
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Create Account</button>
+</form>
+
+<hr>
+
+<a href="/accounts/google/login/?process=login" class="btn btn-outline-danger w-100">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" height="20">
+    Sign up with Google
+</a>
+
+<p class="text-center mt-3">
+    <a href="{% url 'account_login' %}">Already have an account?</a>
+</p>
+{% endblock %}

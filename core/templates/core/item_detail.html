@@ -13,13 +13,14 @@
     </div>
 
     <div class="col-md-6">
+
         <div class="d-flex justify-content-between align-items-center">
             <h2>{{ item.title }}</h2>
 
             {% if item.is_claimed %}
-            <span class="badge text-bg-success">Claimed</span>
+                <span class="badge text-bg-success">Claimed</span>
             {% else %}
-            <span class="badge text-bg-warning">Found</span>
+                <span class="badge text-bg-warning">Found</span>
             {% endif %}
         </div>
 
@@ -44,9 +45,10 @@
 
         <p>{{ item.description }}</p>
 
+        <!-- FIX: Correct URL → mark_claimed -->
         {% if not item.is_claimed %}
-        <form method="POST" 
-              action="{% url 'item_claim' item.pk %}" 
+        <form method="POST"
+              action="{% url 'mark_claimed' item.pk %}"
               onsubmit="return confirm('Are you sure this item has been claimed?');">
             {% csrf_token %}
             <button class="btn btn-success w-100">Mark as claimed</button>
@@ -71,8 +73,7 @@
 
         <hr>
 
-        <!-- IMPORTANT: this URL must match urls.py -->
-        <a href="{% url 'report_item' item.pk %}" 
+        <a href="{% url 'report_item' item.pk %}"
            class="btn btn-outline-warning w-100 mt-2">
             Report incorrect / inappropriate
         </a>

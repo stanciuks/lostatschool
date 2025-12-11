@@ -114,3 +114,36 @@ class ItemReport(models.Model):
     def __str__(self):
         """Return a human-readable representation of the report."""
         return f"Report for {self.item.title} ({self.created_at:%Y-%m-%d})"
+
+class LostRequest(models.Model):
+    """A report created by a user when they lose an item."""
+
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.PROTECT,
+        related_name="lost_requests",
+    )
+
+    location_lost = models.CharField(max_length=200, blank=True)
+    date_lost = models.DateField(default=timezone.now)
+
+    contact_email = models.EmailField(blank=True)
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="lost_requests",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        """Return the lost request title."""
+        return f"Lost: {self.title}"

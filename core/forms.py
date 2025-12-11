@@ -2,7 +2,7 @@
 
 from django import forms
 
-from .models import ItemReport, LostItem
+from .models import LostItem, ItemReport, LostRequest
 
 
 class LostItemForm(forms.ModelForm):
@@ -33,3 +33,21 @@ class ItemReportForm(forms.ModelForm):
 
         model = ItemReport
         fields = ["reason"]
+        
+class LostRequestForm(forms.ModelForm):
+    """Form for users to create a lost-item request."""
+
+    class Meta:
+        model = LostRequest
+        fields = [
+            "title",
+            "description",
+            "category",
+            "location_lost",
+            "date_lost",
+            "contact_email",
+        ]
+        widgets = {
+            "date_lost": forms.DateInput(attrs={"type": "date"}),
+        }
+

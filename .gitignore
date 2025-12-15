@@ -1,6 +1,8 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
 # Virtual environment
 venv/
@@ -8,5 +10,10 @@ venv/
 # Django
 db.sqlite3
 media/
+staticfiles/
+
+# Environment variables
+.env
+
 # OS
 .DS_Store

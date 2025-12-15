@@ -3,79 +3,95 @@
 
 {% block content %}
 
-<a href="{% url 'item_list' %}" class="btn btn-link">&larr; Back to items</a>
+<a href="{% url 'item_list' %}" class="btn btn-link mb-3">
+    &larr; Back to items
+</a>
 
-<div class="row mt-3">
-    <div class="col-md-6">
+<h2 class="mb-4">{{ item.title }}</h2>
+
+<div class="row">
+
+    <!-- IMAGE COLUMN -->
+    <div class="col-12 col-lg-5 mb-4">
         {% if item.image %}
-        <img src="{{ item.image.url }}" class="img-fluid rounded shadow">
+            <img
+                src="{{ item.image.url }}"
+                class="img-fluid rounded shadow"
+                style="max-height: 420px; object-fit: contain;"
+                alt="{{ item.title }}"
+            >
+        {% else %}
+            <div class="bg-light d-flex align-items-center justify-content-center rounded"
+                 style="height: 300px;">
+                <span class="text-muted">No image</span>
+            </div>
         {% endif %}
     </div>
 
-    <div class="col-md-6">
+    <!-- INFO COLUMN -->
+    <div class="col-12 col-lg-7">
 
-        <div class="d-flex justify-content-between align-items-center">
-            <h2>{{ item.title }}</h2>
-
-            {% if item.is_claimed %}
-                <span class="badge text-bg-success">Claimed</span>
+        <p class="mb-2">
+            <strong>Category:</strong>
+            {% if item.category %}
+                {{ item.category.name }}
             {% else %}
-                <span class="badge text-bg-warning">Found</span>
+                —
             {% endif %}
-        </div>
-
-        <p class="text-muted mt-2">
-
-            {% if item.category.name == "Clothing" %}
-                👕 Clothing
-            {% elif item.category.name == "Electronics" %}
-                🎧 Electronics
-            {% elif item.category.name == "Accessories" %}
-                🎒 Accessories
-            {% elif item.category.name == "School Supplies" %}
-                📚 School Supplies
-            {% else %}
-                📦 {{ item.category.name }}
-            {% endif %}
-            <br>
-
-            Found at: {{ item.location_found }}<br>
-            Date found: {{ item.date_found }}
         </p>
 
-        <p>{{ item.description }}</p>
+        <p class="mb-2">
+            <strong>Description:</strong><br>
+            {{ item.description }}
+        </p>
 
-        <!-- FIX: Correct URL → mark_claimed -->
-        {% if not item.is_claimed %}
-        <form method="POST"
+        <p class="mb-2">
+            <strong>Location found:</strong> {{ item.location_found }}
+        </p>
+
+        <p class="mb-3">
+            <strong>Status:</strong>
+            {% if item.status == "CLAIMED" %}
+                <span class="badge text-bg-success">CLAIMED</span>
+            {% else %}
+                <span class="badge text-bg-warning">FOUND</span>
+            {% endif %}
+        </p>
+
+        <!-- MARK AS CLAIMED -->
+        {% if item.status != "CLAIMED" %}
+        <form method="post"
               action="{% url 'mark_claimed' item.pk %}"
               onsubmit="return confirm('Are you sure this item has been claimed?');">
             {% csrf_token %}
-            <button class="btn btn-success w-100">Mark as claimed</button>
+            <button class="btn btn-success w-100 mb-3">
+                Mark as claimed
+            </button>
         </form>
         {% else %}
-        <p class="alert alert-success mt-3 text-center">
-            This item has been claimed.
-        </p>
+            <div class="alert alert-success">
+                This item has already been claimed.
+            </div>
         {% endif %}
 
+        <!-- STAFF ACTIONS -->
         {% if user.is_staff %}
-        <hr>
-        <div class="d-flex gap-2 mt-3">
-            <a href="{% url 'item_edit' item.pk %}" class="btn btn-outline-secondary w-50">
+        <div class="d-flex gap-2 mb-3">
+            <a href="{% url 'item_edit' item.pk %}"
+               class="btn btn-outline-secondary w-50">
                 Edit
             </a>
-            <a href="{% url 'item_delete' item.pk %}" class="btn btn-outline-danger w-50">
+            <a href="{% url 'item_delete' item.pk %}"
+               class="btn btn-outline-danger w-50">
                 Delete
             </a>
         </div>
         {% endif %}
 
-        <hr>
-
+        <!-- REPORT -->
         <a href="{% url 'report_item' item.pk %}"
-           class="btn btn-outline-warning w-100 mt-2">
-            Report incorrect / inappropriate
+           class="btn btn-outline-danger w-100">
+            🚩 Report item
         </a>
 
     </div>

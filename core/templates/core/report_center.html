@@ -1,49 +1,97 @@
 {% extends "core/base.html" %}
-
 {% block content %}
-<h1 class="mb-4">Report Center</h1>
+<div class="container py-4">
 
-<!-- FILTER BUTTONS -->
-<div class="mb-4">
-    <a href="?status=" class="btn btn-outline-primary {% if current_status == "" %}active{% endif %}">All</a>
-    <a href="?status=new" class="btn btn-outline-warning {% if current_status == "new" %}active{% endif %}">New</a>
-    <a href="?status=reviewed" class="btn btn-outline-success {% if current_status == "reviewed" %}active{% endif %}">Reviewed</a>
-    <a href="?status=dismissed" class="btn btn-outline-secondary {% if current_status == "dismissed" %}active{% endif %}">Dismissed</a>
-</div>
+    <h2 class="mb-4">Report Moderation Center</h2>
 
-<!-- REPORT LIST -->
-<div class="list-group">
-    {% for report in reports %}
-    <div class="list-group-item py-3">
+    <!-- FILTER BUTTONS -->
+    <div class="mb-3">
+        <a href="?status=all" class="btn btn-sm {% if current_filter == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}">All</a>
 
-        <div class="d-flex justify-content-between">
-            <div>
-                <strong>{{ report.item.title }}</strong>
-                <span class="badge bg-secondary">{{ report.get_status_display }}</span>
-                <br>
-                <small class="text-muted">
-                    {{ report.created_at }} · by {{ report.reported_by|default:"Anonymous" }}
-                </small>
-                <p class="mt-2 mb-0">{{ report.reason }}</p>
-            </div>
-
-            <div class="text-end">
-                <a href="{% url 'item_detail' report.item.pk %}" class="btn btn-sm btn-outline-primary mb-2">
-                    View item
-                </a>
-
-                <div class="btn-group-vertical">
-                    <a href="{% url 'set_report_status' report.pk 'reviewed' %}" class="btn btn-sm btn-success">Mark reviewed</a>
-                    <a href="{% url 'set_report_status' report.pk 'dismissed' %}" class="btn btn-sm btn-secondary">Dismiss</a>
-                    <a href="{% url 'set_report_status' report.pk 'new' %}" class="btn btn-sm btn-warning">Reset</a>
-                </div>
-            </div>
-        </div>
-
+        {% for status in valid_statuses %}
+            <a href="?status={{ status }}" class="btn btn-sm {% if current_filter == status %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                {{ status|title }}
+            </a>
+        {% endfor %}
     </div>
-    {% empty %}
-    <p class="text-muted">No reports found.</p>
-    {% endfor %}
-</div>
 
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Item</th>
+                <th>Image</th>
+                <th>Reason</th>
+                <th>Reporter</th>
+                <th>Status</th>
+                <th style="width: 180px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in reports %}
+            <tr>
+                <td>
+                    <a href="{% url 'item_detail' report.item.pk %}">
+                        {{ report.item.title }}
+                    </a>
+                </td>
+
+                <td>
+                    {% if report.item.image %}
+                        <img src="{{ report.item.image.url }}" width="70" class="img-thumbnail">
+                    {% else %}
+                        <span class="text-muted">No image</span>
+                    {% endif %}
+                </td>
+
+                <td>{{ report.reason }}</td>
+
+                <td>
+                    {% if report.reported_by %}
+                        {{ report.reported_by.username }}
+                    {% else %}
+                        <span class="text-muted">Anonymous</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if report.status == 'new' %}
+                        <span class="badge bg-danger">New</span>
+                    {% elif report.status == 'reviewed' %}
+                        <span class="badge bg-success">Reviewed</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Dismissed</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    <form method="POST" action="{% url 'set_report_status' report.pk 'new' %}" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="new">
+                        <button class="btn btn-sm btn-danger">New</button>
+                    </form>
+
+                    <form method="POST" action="{% url 'set_report_status' report.pk 'reviewed' %}" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="reviewed">
+                        <button class="btn btn-sm btn-success">Review</button>
+                    </form>
+
+                    <form method="POST" action="{% url 'set_report_status' report.pk 'dismissed' %}" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="dismissed">
+                        <button class="btn btn-sm btn-secondary">Dismiss</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center text-muted">
+                    No reports found.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
 {% endblock %}

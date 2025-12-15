@@ -1,58 +1,74 @@
 {% extends "core/base.html" %}
-
 {% block content %}
-<h1 class="mb-4">My Dashboard</h1>
+<div class="container py-4">
 
-<!-- My Reports -->
-<h3 class="h5">My Reports</h3>
+    <h2 class="mb-4">Dashboard</h2>
 
-{% if my_reports %}
-<ul class="list-group mb-4">
-    {% for report in my_reports %}
-    <li class="list-group-item">
-        <strong>{{ report.item.title }}</strong>
-        <span class="badge bg-secondary ms-2">{{ report.get_status_display }}</span>
-        <br>
-        <small class="text-muted">
-            {{ report.created_at }} – {{ report.reason|truncatechars:120 }}
-        </small>
-    </li>
-    {% endfor %}
-</ul>
-{% else %}
-<p class="text-muted mb-4">You haven't reported any items yet.</p>
-{% endif %}
+    <!-- SUMMARY CARDS -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center p-3 shadow-sm">
+                <h5>My Lost Requests</h5>
+                <h2>{{ stats.lost_count }}</h2>
+                <a href="{% url 'lost_request_list' %}" class="btn btn-sm btn-outline-primary mt-2">View All</a>
+            </div>
+        </div>
 
-<div class="row">
-    <!-- Recent unclaimed -->
-    <div class="col-md-6">
-        <h3 class="h5">Recently Found</h3>
-        <ul class="list-group mb-4">
-            {% for item in recent_unclaimed %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>{{ item.title }}</span>
-                <a href="{% url 'item_detail' item.pk %}" class="btn btn-sm btn-outline-primary">View</a>
-            </li>
-            {% empty %}
-            <li class="list-group-item text-muted">No items.</li>
-            {% endfor %}
-        </ul>
+        <div class="col-md-4">
+            <div class="card text-center p-3 shadow-sm">
+                <h5>My Found Items</h5>
+                <h2>{{ stats.found_count }}</h2>
+                <a href="{% url 'item_list' %}" class="btn btn-sm btn-outline-primary mt-2">View Items</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card text-center p-3 shadow-sm">
+                <h5>Reports Submitted</h5>
+                <h2>{{ stats.report_count }}</h2>
+                <a href="{% url 'dashboard' %}#reports" class="btn btn-sm btn-outline-primary mt-2">View Reports</a>
+            </div>
+        </div>
     </div>
 
-    <!-- Recent claimed -->
-    <div class="col-md-6">
-        <h3 class="h5">Recently Claimed</h3>
-        <ul class="list-group mb-4">
-            {% for item in recent_claimed %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>{{ item.title }}</span>
-                <a href="{% url 'item_detail' item.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+    <!-- MY LOST REQUESTS -->
+    <h4>My Lost Requests</h4>
+    <ul class="list-group mb-4">
+        {% for r in my_lost_requests %}
+            <li class="list-group-item d-flex justify-content-between">
+                <a href="{% url 'lost_request_detail' r.pk %}">{{ r.title }}</a>
+                <small class="text-muted">{{ r.created_at|date:"Y-m-d" }}</small>
             </li>
-            {% empty %}
-            <li class="list-group-item text-muted">No items.</li>
-            {% endfor %}
-        </ul>
-    </div>
+        {% empty %}
+            <li class="list-group-item">You have no lost requests yet.</li>
+        {% endfor %}
+    </ul>
+
+    <!-- MY FOUND ITEMS -->
+    <h4>My Found Items</h4>
+    <ul class="list-group mb-4">
+        {% for item in my_found_items %}
+            <li class="list-group-item d-flex justify-content-between">
+                <a href="{% url 'item_detail' item.pk %}">{{ item.title }}</a>
+                <small class="text-muted">{{ item.created_at|date:"Y-m-d" }}</small>
+            </li>
+        {% empty %}
+            <li class="list-group-item">You have not submitted any found items.</li>
+        {% endfor %}
+    </ul>
+
+    <!-- REPORTS I SUBMITTED -->
+    <h4 id="reports">Reports I Submitted</h4>
+    <ul class="list-group mb-4">
+        {% for rep in my_reports %}
+            <li class="list-group-item d-flex justify-content-between">
+                <a href="{% url 'item_detail' rep.item.pk %}">Report on {{ rep.item.title }}</a>
+                <span class="badge bg-secondary">{{ rep.status }}</span>
+            </li>
+        {% empty %}
+            <li class="list-group-item">You have not submitted any reports.</li>
+        {% endfor %}
+    </ul>
+
 </div>
-
 {% endblock %}

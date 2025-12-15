@@ -1,0 +1,18 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="container py-4">
+    <h3>Claim Item</h3>
+
+    <p>Are you sure you want to claim this item?</p>
+
+    <div class="card p-3 mb-3">
+        <strong>{{ item.title }}</strong>
+        <p>{{ item.description }}</p>
+    </div>
+    <form method="POST">
+        {% csrf_token %}
+        <button class="btn btn-success">Yes, claim item</button>
+        <a href="{% url 'item_detail' item.pk %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,43 +1,14 @@
 {% extends "core/base.html" %}
-
 {% block content %}
-<h2>Report a Lost Item</h2>
-<p class="text-muted">
-    Fill in the details below so others can help you find your item.
-</p>
+<div class="container py-4">
+    <h2>{% if form.instance.pk %}Edit Lost Request{% else %}Report Lost Item{% endif %}</h2>
 
-<form method="post" class="mt-3">
-    {% csrf_token %}
-    <div class="mb-3">
-        <label class="form-label">Title</label>
-        {{ form.title }}
-    </div>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
 
-    <div class="mb-3">
-        <label class="form-label">Description</label>
-        {{ form.description }}
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Category</label>
-        {{ form.category }}
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Where did you lose it?</label>
-        {{ form.location_lost }}
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Date lost</label>
-        {{ form.date_lost }}
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Contact email (optional)</label>
-        {{ form.contact_email }}
-    </div>
-
-    <button class="btn btn-primary w-100">Submit lost item</button>
-</form>
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="{% url 'lost_request_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
 {% endblock %}

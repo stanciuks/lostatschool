@@ -46,6 +46,11 @@
             transform: translateY(-3px);
             box-shadow: 0 4px 20px rgba(0,0,0,.08);
         }
+
+        /* tiny safe polish: prevents image stretching in cards */
+        .card-img-top {
+            object-fit: cover;
+        }
     </style>
 
     {% block extra_head %}{% endblock %}
@@ -156,7 +161,7 @@
                     <!-- Google Login -->
                     <li class="nav-item">
                         <a class="google-btn" href="/accounts/google/login/?process=login">
-                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg">
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
                             Login with Google
                         </a>
                     </li>
